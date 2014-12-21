@@ -128,9 +128,9 @@ class S3RequestModel(S3Model):
                                   writable = False,
                                   )
 
-        req_priority_opts = {3: T("High"),
-                             2: T("Medium"),
-                             1: T("Low")
+        req_priority_opts = {3: DIV(T("High"), _style="color:red;font-weight: bold;"),
+                             2: DIV(T("Medium"), _style="color:orange;font-weight: bold;"),
+                             1: DIV(T("Low"), _style="color:green;font-weight: bold;"),
                              }
 
         req_types_deployed = settings.get_req_req_type()
@@ -204,7 +204,6 @@ class S3RequestModel(S3Model):
                           Field("priority", "integer",
                                 default = 2,
                                 label = T("Priority"),
-                                #@ToDo: Colour code the priority text - red, orange, green
                                 represent = lambda opt: \
                                     req_priority_opts.get(opt, UNKNOWN_OPT),
                                 #represent = self.req_priority_represent,
