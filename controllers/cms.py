@@ -637,8 +637,9 @@ def newsfeed():
                            (T("Details"), "body"),
                            ]
             lappend = list_fields.append
+            levels = current.gis.get_relevant_hierarchy_levels()
             for level in levels:
-                lappend((hierarchy[level], "location_id$%s" % level))
+                lappend(("location_id$%s" % level))
             if contact_field:
                 lappend((T("Contact"), contact_field))
             if org_field:
