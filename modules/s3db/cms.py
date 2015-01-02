@@ -63,7 +63,8 @@ class S3ContentModel(S3Model):
 
     names = ("cms_series",
              "cms_post",
-             "cms_post_id",
+             "cms_post_location",
+             "cms_post_id",       
              "cms_post_module",
              "cms_tag",
              "cms_tag_post",
@@ -186,10 +187,7 @@ class S3ContentModel(S3Model):
                            label = T("Body"),
                            represent = body_represent,
                            widget = body_widget,
-                           ),
-                     # @ToDo: Move this to link table?
-                     # - although this makes widget hard!
-                     self.gis_location_id(),
+                           ),  
                      # @ToDo: Move this to link table?
                      # - although this makes widget hard!
                      self.pr_person_id(label = T("Contact"),
@@ -240,6 +238,36 @@ class S3ContentModel(S3Model):
             msg_record_deleted = T("Post deleted"),
             msg_list_empty = T("No posts currently available"))
 
+        crud_form = S3SQLCustomForm("name",
+                                    "title",
+                                    "body",
+                                    S3SQLInlineComponent("post_location", 
+                                                         label = "",      
+                                                         field = "location_id",                                   
+                                                        ),
+                                    "avatar",
+                                    "replies",
+                                    "expired",
+                                    "comments",
+                                    )        
+        self.add_components(tablename,
+                            cms_post_location = {"link": "cms_post_location",
+                                                 "joinby": "post_id",
+                                                 "key": "location_id",
+                                                },
+                            cms_post = "post_id",
+                            )
+
+        self.configure(tablename,
+                       crud_form=crud_form)        
+        # ---------------------------------------------------------------------
+        # Post Locations (link table)
+        #
+        tablename = "cms_post_location"
+        define_table(tablename,
+                     series_id(),
+                     self.gis_location_id(),
+                     *s3_meta_fields())
         # Reusable field
         represent = S3Represent(lookup=tablename)
         post_id = S3ReusableField("post_id", "reference %s" % tablename,
@@ -319,6 +347,7 @@ class S3ContentModel(S3Model):
                                      "format": "rss",
                                      },
                                     ],
+                  crud_form = crud_form,
                   filter_widgets = filter_widgets,
                   list_fields = list_fields,
                   list_layout = cms_post_list_layout,
@@ -359,6 +388,10 @@ class S3ContentModel(S3Model):
 
                        # For filter widget
                        cms_tag_post = "post_id",
+                       cms_post_location = {"link": "cms_post_location",
+                                            "joinby": "post_id",
+                                            "key": "location_id",
+                                            },                     
 
                        cms_post_organisation = {"joinby": "post_id",
                                                 "multiple": settings.get_cms_multiple_organisations(),
