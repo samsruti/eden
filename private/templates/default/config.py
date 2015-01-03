@@ -693,6 +693,8 @@ settings.gis.geonames_username = "eden_test"
 #settings.req.requester_optional = True
 # Uncomment if the User Account logging the Request is NOT normally the Requester
 #settings.req.requester_is_author = False
+# Uncomment to show req_req purpose field in the list view of req_req_skill
+#settings.req.req_skill_show_purpose = True
 # Filter Requester as being from the Site
 #settings.req.requester_from_site = True
 # Set the Requester as being an HR for the Site if no HR record yet & as Site contact if none yet exists
