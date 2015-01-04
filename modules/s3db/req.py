@@ -2052,11 +2052,6 @@ class S3RequestSkillModel(S3Model):
         tablename = "req_req_skill"
         define_table(tablename,
                      self.req_req_id(empty=False),
-                     # Make this a Component
-                     #Field("task",
-                     #      readable=False,
-                     #      writable=False, # Populated from req_req 'Purpose'
-                     #      label = T("Task Details")),
                      self.hrm_multi_skill_id(
                           label = T("Required Skills"),
                           comment = T("Leave blank to request an unskilled person"),
@@ -2122,13 +2117,15 @@ class S3RequestSkillModel(S3Model):
 
         list_fields = ["id",
                        "skill_id",
-                       # @ToDo: Activate based on a deployment_setting
-                       #"task",
                        "quantity",
                        "quantity_transit",
                        "quantity_fulfil",
                        "comments",
                        ]
+
+        if settings.get_req_skill_show_purpose():
+            list_fields.insert(2, "req_id$purpose")
+
         if use_commit:
             list_fields.insert(3, "quantity_commit")
 

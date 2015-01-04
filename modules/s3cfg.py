@@ -3054,6 +3054,12 @@ class S3Config(Storage):
         """
         return self.req.get("requester_from_site", False)
 
+    def get_req_skill_show_purpose(self):
+        """
+            Whether to show the req_req purpose field in the list view of req_req_skill
+        """
+        return self.req.get("req_skill_show_purpose", False)
+
     def get_req_requester_to_site(self):
         """
             Whether to set the Requester as being an HR for the Site if no HR record yet & as Site contact if none yet exists
