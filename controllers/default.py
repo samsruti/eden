@@ -69,45 +69,52 @@ def index():
     auth.configure_user_fields()
 
     page = request.args(0)
+    custom = None
     if page:
-        # Go to a custom page
-        # Arg 1 = function in /private/templates/<template>/controllers.py
-        # other Args & Vars passed through
-        controller = "applications.%s.private.templates.%s.controllers" % \
-                            (appname, settings.get_template())
+        # Go to a custom page,
+        # - args[0] = name of the class in /modules/templates/<template>/controllers.py
+        # - other args & vars passed through
+        template = settings.get_template()
+        location = settings.get_template_location()
+        package = "applications.%s.%s.templates.%s" % \
+                    (appname, location, template)
+        name = "controllers"
         try:
-            exec("import %s as custom" % controller)
-        except ImportError:
+            custom = getattr(__import__(package, fromlist=[name]), name)
+        except (ImportError, AttributeError):
             # No Custom Page available, continue with the default
-            page = "private/templates/%s/controllers.py" % \
-                        settings.get_template()
+            page = "%s/templates/%s/controllers.py" % (location, template)
             current.log.warning("File not loadable",
                                 "%s, %s" % (page, sys.exc_info()[1]))
         else:
             if "." in page:
-                # Remove extension
+                # Remove format extension
                 page = page.split(".", 1)[0]
-            if page in custom.__dict__:
-                exec ("output = custom.%s()()" % page)
-                return output
+            if hasattr(custom, page):
+                controller = getattr(custom, page)()
             elif page != "login":
                 raise(HTTP(404, "Function not found: %s()" % page))
             else:
-                output = custom.index()()
-                return output
+                controller = custom.index()
+            output = controller()
+            return output
+
     elif settings.get_template() != "default":
         # Try a Custom Homepage
-        controller = "applications.%s.private.templates.%s.controllers" % \
-                            (appname, settings.get_template())
+        package = "applications.%s.%s.templates.%s" % \
+                    (appname,
+                     settings.get_template_location(),
+                     settings.get_template())
+        name = "controllers"
         try:
-            exec("import %s as custom" % controller)
-        except ImportError:
+            custom = getattr(__import__(package, fromlist=[name]), name)
+        except (ImportError, AttributeError):
             # No Custom Page available, continue with the default
             # @ToDo: cache this result in session
             current.log.warning("Custom homepage cannot be loaded",
                                 sys.exc_info()[1])
         else:
-            if "index" in custom.__dict__:
+            if hasattr(custom, "index"):
                 output = custom.index()()
                 return output
 
@@ -540,8 +547,12 @@ def user():
 
     if settings.get_template() != "default":
         # Try a Custom View
-        view = os.path.join(request.folder, "private", "templates",
-                            settings.get_template(), "views", "user.html")
+        view = os.path.join(request.folder,
+                            settings.get_template_location(),
+                            "templates",
+                            settings.get_template(),
+                            "views",
+                            "user.html")
         if os.path.exists(view):
             try:
                 # Pass view as file not str to work in compiled mode
@@ -916,8 +927,12 @@ def about():
     response.title = T("About")
     if settings.get_template() != "default":
         # Try a Custom View
-        view = os.path.join(request.folder, "private", "templates",
-                            settings.get_template(), "views", "about.html")
+        view = os.path.join(request.folder,
+                            settings.get_template_location(),
+                            "templates",
+                            settings.get_template(),
+                            "views",
+                            "about.html")
         if os.path.exists(view):
             try:
                 # Pass view as file not str to work in compiled mode
@@ -1014,8 +1029,12 @@ def help():
 
     if settings.get_template() != "default":
         # Try a Custom View
-        view = os.path.join(request.folder, "private", "templates",
-                            settings.get_template(), "views", "help.html")
+        view = os.path.join(request.folder,
+                            settings.get_template_location(),
+                            "templates",
+                            settings.get_template(),
+                            "views",
+                            "help.html")
         if os.path.exists(view):
             try:
                 # Pass view as file not str to work in compiled mode
@@ -1033,8 +1052,12 @@ def privacy():
 
     if settings.get_template() != "default":
         # Try a Custom View
-        view = os.path.join(request.folder, "private", "templates",
-                            settings.get_template(), "views", "privacy.html")
+        view = os.path.join(request.folder,
+                            settings.get_template_location(),
+                            "templates",
+                            settings.get_template(),
+                            "views",
+                            "privacy.html")
         if os.path.exists(view):
             try:
                 # Pass view as file not str to work in compiled mode
@@ -1052,8 +1075,12 @@ def tos():
 
     if settings.get_template() != "default":
         # Try a Custom View
-        view = os.path.join(request.folder, "private", "templates",
-                            settings.get_template(), "views", "tos.html")
+        view = os.path.join(request.folder,
+                            settings.get_template_location(),
+                            "templates",
+                            settings.get_template(),
+                            "views",
+                            "tos.html")
         if os.path.exists(view):
             try:
                 # Pass view as file not str to work in compiled mode
@@ -1071,8 +1098,12 @@ def video():
 
     if settings.get_template() != "default":
         # Try a Custom View
-        view = os.path.join(request.folder, "private", "templates",
-                            settings.get_template(), "views", "video.html")
+        view = os.path.join(request.folder,
+                            settings.get_template_location(),
+                            "templates",
+                            settings.get_template(),
+                            "views",
+                            "video.html")
         if os.path.exists(view):
             try:
                 # Pass view as file not str to work in compiled mode
@@ -1123,22 +1154,28 @@ def contact():
 
     template = settings.get_template()
     if template != "default":
-        # Try a Custom Page
-        controller = "applications.%s.private.templates.%s.controllers" % \
-                            (appname, template)
+        # Try a Custom Controller
+        location = settings.get_template_location()
+        package = "applications.%s.%s.templates.%s" % \
+                    (appname, location, template)
+        name = "controllers"
         try:
-            exec("import %s as custom" % controller) in globals(), locals()
-        except ImportError, e:
+            custom = getattr(__import__(package, fromlist=[name]), name)
+        except (ImportError, AttributeError):
             # No Custom Page available, try a custom view
             pass
         else:
-            if "contact" in custom.__dict__:
-                output = custom.contact()()
-                return output
+            if hasattr(custom, "contact"):
+                controller = getattr(custom, "contact")()
+                return controller()
 
         # Try a Custom View
-        view = os.path.join(request.folder, "private", "templates",
-                            template, "views", "contact.html")
+        view = os.path.join(request.folder,
+                            location,
+                            "templates",
+                            template,
+                            "views",
+                            "contact.html")
         if os.path.exists(view):
             try:
                 # Pass view as file not str to work in compiled mode
