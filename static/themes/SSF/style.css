@@ -42,3 +42,11 @@
     background-image: url(../../img/sunflower_spin_throbber.gif);
     background-repeat: no-repeat;
 }
+
+.row {
+    margin: 0;
+}
+
+.row-home {
+    margin-left: -30px
+}
