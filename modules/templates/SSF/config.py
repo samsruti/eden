@@ -743,7 +743,7 @@ def config(settings):
             msg_record_created = None,
             msg_record_deleted = None
         )
-        if r.interactive:
+        if r.interactive or r.representation == "aadata":
             trimmed_task = False
             get_vars = r.get_vars
             ADD_TASK = T("Create Task")
