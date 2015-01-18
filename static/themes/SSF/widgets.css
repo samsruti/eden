@@ -1,0 +1,28 @@
+/* Form Layout Styles */
+
+.form-horizontal .controls {
+    margin-left: 0px;
+}
+
+.form-container form input.string, .form-container form textarea {
+    width: auto;
+}
+
+#submit_record__row .btn-primary{
+    margin-left: 0px;
+}
+
+
+.form-container .auth_login #submit_record__row .btn-primary {
+    margin-left: 10px;
+    margin-right: 0;
+    width: 100%;
+}
+
+.form-horizontal .control-label {
+    text-align: left;
+}
+
+#comment-form {
+    width: 100%;
+}
